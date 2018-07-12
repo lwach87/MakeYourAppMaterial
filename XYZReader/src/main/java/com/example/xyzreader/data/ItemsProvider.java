@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemsProvider extends ContentProvider {
+
 	private SQLiteOpenHelper mOpenHelper;
 
 	interface Tables {
