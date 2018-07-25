@@ -7,7 +7,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.ShareCompat;
@@ -135,9 +134,9 @@ public class ArticleDetailFragment extends Fragment implements
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(view ->
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
-                .setType("text/plain")
-                .setText("Some sample text")
-                .getIntent(), getString(R.string.action_share))));
+                        .setType("text/plain")
+                        .setText("Some sample text")
+                        .getIntent(), getString(R.string.action_share))));
 
         bindViews();
         updateStatusBar();

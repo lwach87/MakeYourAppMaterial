@@ -1,5 +1,6 @@
 <com.example.xyzreader.ui.DrawInsetsFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/draw_insets_frame_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -97,9 +98,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:backgroundTint="@color/colorAccent"
+        android:background="@color/colorAccent"
         android:contentDescription="@string/action_share"
+        android:elevation="@dimen/fab_elevation"
         android:src="@drawable/ic_share"
-        app:fabSize="normal" />
+        android:translationZ="@dimen/fab_press_translation_z"
+        app:fabSize="normal"
+        tools:targetApi="lollipop" />
 
 </com.example.xyzreader.ui.DrawInsetsFrameLayout>
