@@ -30,9 +30,9 @@ import timber.log.Timber;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
-    private static final String TAG = ArticleListActivity.class.toString();
     private Cursor mCursor;
     private Context context;
+    private Picasso picasso;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss", Locale.US);
     // Use default locale format
@@ -42,6 +42,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     public Adapter(Cursor cursor, Context context) {
         this.mCursor = cursor;
+        this.context = context;
+    }
+
+    public Adapter(Picasso picasso, Context context){
+        this.picasso = picasso;
         this.context = context;
     }
 
@@ -96,7 +101,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)));
         }
 
-        Picasso.with(holder.thumbnailView.getContext())
+      picasso
                 .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
                 .into(holder.thumbnailView);
     }
