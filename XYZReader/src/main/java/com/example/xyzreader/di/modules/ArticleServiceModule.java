@@ -1,6 +1,8 @@
 package com.example.xyzreader.di.modules;
 
+import com.example.xyzreader.data.RequestState;
 import com.example.xyzreader.data.remote.ArticleService;
+import com.jakewharton.rxrelay2.BehaviorRelay;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
@@ -13,7 +15,7 @@ public class ArticleServiceModule {
 
   @Provides
   @Singleton
-  Retrofit provideRetrofit() {
+  public Retrofit provideRetrofit() {
     return new Retrofit.Builder()
         .baseUrl("https://go.udacity.com")
         .addConverterFactory(GsonConverterFactory.create())
@@ -23,7 +25,13 @@ public class ArticleServiceModule {
 
   @Provides
   @Singleton
-  ArticleService provideService(Retrofit retrofit) {
+  public ArticleService provideService(Retrofit retrofit) {
     return retrofit.create(ArticleService.class);
+  }
+
+  @Provides
+  @Singleton
+  public BehaviorRelay<Integer> provideBehaviourRelay() {
+    return BehaviorRelay.createDefault(RequestState.IDLE);
   }
 }

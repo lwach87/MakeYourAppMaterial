@@ -14,12 +14,15 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 
+import com.example.xyzreader.ArticleApp;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.UpdaterService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
+import com.example.xyzreader.di.modules.ArticleListActivityModule;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -44,6 +47,11 @@ public class ArticleListActivity extends AppCompatActivity implements LoaderMana
         setContentView(R.layout.activity_article_list);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
+
+        DaggerArticleListActivityComponent.builder()
+            .applicationComponent(ArticleApp.get(this).getComponent())
+        .articleListActivityModule(new ArticleListActivityModule(this))
+            .build().inject(this);
 
         getLoaderManager().initLoader(0, null, this);
 

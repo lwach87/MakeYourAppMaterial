@@ -21,6 +21,6 @@ public interface ArticleDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void insertArticles(List<Article> articles);
 
-  @Query("DELETE FROM article WHERE id = :id")
-  void deleteArticle(int id);
+  @Query("DELETE FROM article")
+  void deleteArticle();
 }

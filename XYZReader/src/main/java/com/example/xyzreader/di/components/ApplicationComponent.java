@@ -1,5 +1,6 @@
 package com.example.xyzreader.di.components;
 
+import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.di.modules.ArticleServiceModule;
 import com.example.xyzreader.di.modules.DatabaseModule;
 import com.squareup.picasso.Picasso;
@@ -12,4 +13,5 @@ public interface ApplicationComponent {
 
   Picasso getPicasso();
 
+  Repository getRepository();
 }

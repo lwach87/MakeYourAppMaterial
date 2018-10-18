@@ -4,6 +4,9 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 import com.example.xyzreader.data.local.ArticleDao;
 import com.example.xyzreader.data.local.ArticleDatabase;
+import com.example.xyzreader.data.local.Repository;
+import com.example.xyzreader.data.remote.ArticleService;
+import com.jakewharton.rxrelay2.BehaviorRelay;
 import com.squareup.picasso.Picasso;
 import dagger.Module;
 import dagger.Provides;
@@ -20,25 +23,32 @@ public class DatabaseModule {
 
   @Provides
   @Singleton
-  Context provideContext() {
+  public Context provideContext() {
     return context;
   }
 
   @Provides
   @Singleton
-  Picasso providePicasso(Context context) {
+  public Picasso providePicasso(Context context) {
     return new Picasso.Builder(context).build();
   }
 
   @Provides
   @Singleton
-  ArticleDatabase provideDatabase(Context context) {
+  public ArticleDatabase provideDatabase(Context context) {
     return Room.databaseBuilder(context, ArticleDatabase.class, "ArticleDatabase").build();
   }
 
   @Provides
   @Singleton
-  ArticleDao provideDao(ArticleDatabase articleDatabase) {
+  public ArticleDao provideDao(ArticleDatabase articleDatabase) {
     return articleDatabase.articleDao();
+  }
+
+  @Provides
+  @Singleton
+  public Repository provideRepository(ArticleDao articleDao, ArticleService articleService,
+      BehaviorRelay<Integer> behaviorRelay) {
+    return new Repository(articleDao, articleService, behaviorRelay);
   }
 }
