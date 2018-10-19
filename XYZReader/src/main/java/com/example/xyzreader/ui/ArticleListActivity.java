@@ -1,114 +1,129 @@
 package com.example.xyzreader.ui;
 
-import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.Loader;
-import android.database.Cursor;
+import static android.support.v7.widget.StaggeredGridLayoutManager.VERTICAL;
+
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-
-import com.example.xyzreader.ArticleApp;
-import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.UpdaterService;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.example.xyzreader.ArticleApp;
+import com.example.xyzreader.R;
+import com.example.xyzreader.data.RequestState;
+import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
 import com.example.xyzreader.di.modules.ArticleListActivityModule;
+import io.reactivex.CompletableObserver;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import javax.inject.Inject;
+import timber.log.Timber;
 
-/**
- * An activity representing a list of Articles. This activity has different presentations for
- * handset and tablet-size devices. On handsets, the activity presents a list of items, which when
- * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
- * activity presents a grid of items as cards.
- */
-public class ArticleListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
+public class ArticleListActivity extends AppCompatActivity implements OnRefreshListener {
 
-    @BindView(R.id.swipe_refresh_layout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
+  @Inject
+  Repository repository;
 
-    @BindView(R.id.recycler_view)
-    RecyclerView mRecyclerView;
+  @Inject
+  Adapter adapter;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_article_list);
-        ButterKnife.bind(this);
-        setSupportActionBar(mToolbar);
+  @BindView(R.id.toolbar)
+  Toolbar mToolbar;
 
-        DaggerArticleListActivityComponent.builder()
-            .applicationComponent(ArticleApp.get(this).getComponent())
+  @BindView(R.id.swipe_refresh_layout)
+  SwipeRefreshLayout mSwipeRefreshLayout;
+
+  @BindView(R.id.recycler_view)
+  RecyclerView mRecyclerView;
+
+  private CompositeDisposable disposable = new CompositeDisposable();
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_article_list);
+    ButterKnife.bind(this);
+    setSupportActionBar(mToolbar);
+
+    DaggerArticleListActivityComponent.builder()
+        .applicationComponent(ArticleApp.get(this).getComponent())
         .articleListActivityModule(new ArticleListActivityModule(this))
-            .build().inject(this);
+        .build().inject(this);
 
-        getLoaderManager().initLoader(0, null, this);
+    mSwipeRefreshLayout.setOnRefreshListener(this);
+    mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
+    mRecyclerView.setAdapter(adapter);
 
-        if (savedInstanceState == null) {
-            refresh();
-        }
+    getArticlesFromDatabase();
+    handleLoadingStatus();
+
+    if (savedInstanceState == null) {
+      repository.syncArticles().subscribe(getSyncObserver());
     }
+  }
 
-    private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
-    }
+  @Override
+  public void onRefresh() {
+    repository.syncArticles().subscribe(getSyncObserver());
+  }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        registerReceiver(mRefreshingReceiver,
-                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
-    }
+  private void handleLoadingStatus() {
+    repository.getRequestState().subscribe(state -> {
+      switch (state) {
+        case RequestState.IDLE:
+          break;
+        case RequestState.LOADING:
+          mSwipeRefreshLayout.setRefreshing(true);
+          break;
+        case RequestState.COMPLETED:
+          mSwipeRefreshLayout.setRefreshing(false);
+          break;
+        case RequestState.ERROR:
+          mSwipeRefreshLayout.setRefreshing(false);
+          break;
+      }
+    });
+  }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unregisterReceiver(mRefreshingReceiver);
-    }
+  private void getArticlesFromDatabase() {
+    disposable.add(
+        repository.getArticlesFromDatabase()
+            .subscribe(
+                article -> adapter.swapData(article),
+                error -> Timber.d("Articles loading - error: " + error.getMessage()),
+                () -> Timber.d("onComplete")
+//                subscription -> adapter.clearData()
+            ));
+  }
 
-    private boolean mIsRefreshing = false;
+  private CompletableObserver getSyncObserver() {
+    return new CompletableObserver() {
+      @Override
+      public void onSubscribe(@NonNull Disposable d) {
+        Timber.d("Sync started...");
+      }
 
-    private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-                updateRefreshingUI();
-            }
-        }
+      @Override
+      public void onComplete() {
+        Timber.d("Sync finished...");
+      }
+
+      @Override
+      public void onError(@NonNull Throwable e) {
+        Timber.d("Sync failed! Error: " + e.getMessage());
+      }
     };
+  }
 
-    private void updateRefreshingUI() {
-        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Adapter adapter = new Adapter(cursor, this);
-        adapter.setHasStableIds(true);
-        mRecyclerView.setAdapter(adapter);
-        int columnCount = getResources().getInteger(R.integer.list_column_count);
-        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL));
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mRecyclerView.setAdapter(null);
-    }
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    disposable.clear();
+  }
 }
