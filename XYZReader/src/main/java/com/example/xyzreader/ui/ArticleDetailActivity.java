@@ -1,173 +1,116 @@
 package com.example.xyzreader.ui;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.Loader;
-import android.database.Cursor;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v13.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.TypedValue;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowInsets;
-
+import android.support.v7.widget.Toolbar;
+import android.widget.ImageView;
+import android.widget.TextView;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import com.example.xyzreader.ArticleApp;
 import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.ItemsContract;
+import com.example.xyzreader.data.local.Repository;
+import com.example.xyzreader.data.model.Article;
+import com.example.xyzreader.utils.StringUtils;
+import com.squareup.picasso.Picasso;
+import io.reactivex.SingleObserver;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import javax.inject.Inject;
+import timber.log.Timber;
 
-/**
- * An activity representing a single Article detail screen, letting you swipe between articles.
- */
-public class ArticleDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleDetailActivity extends AppCompatActivity {
 
-    private Cursor mCursor;
-    private long mStartId;
+  @Inject
+  Repository repository;
 
-    private long mSelectedItemId;
-    private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
-    private int mTopInset;
+  @Inject
+  Picasso picasso;
 
-    private ViewPager mPager;
-    private MyPagerAdapter mPagerAdapter;
-    private View mUpButtonContainer;
-    private View mUpButton;
+  @BindView(R.id.details_toolbar)
+  Toolbar detailsToolbar;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-        }
-        setContentView(R.layout.activity_article_detail);
+  @BindView(R.id.details_toolbar_collapsing)
+  CollapsingToolbarLayout detailsToolbarCollapsing;
 
-        getLoaderManager().initLoader(0, null, this);
+  @BindView(R.id.photo)
+  ImageView photoView;
 
-        mPagerAdapter = new MyPagerAdapter(getFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPager.setAdapter(mPagerAdapter);
-        mPager.setPageMargin((int) TypedValue
-                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
-        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
+  @BindView(R.id.article_title)
+  TextView articleTitleView;
 
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
-                mUpButton.animate()
-                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-                        .setDuration(300);
-            }
+  @BindView(R.id.article_subtitle)
+  TextView articleSubtitleView;
 
-            @Override
-            public void onPageSelected(int position) {
-                if (mCursor != null) {
-                    mCursor.moveToPosition(position);
-                }
-                mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
-                updateUpButtonPosition();
-            }
-        });
+  @BindView(R.id.article_body)
+  TextView articleBodyView;
 
-        mUpButtonContainer = findViewById(R.id.up_container);
+  private int id;
+  private boolean showTitleInToolbar = true;
 
-        mUpButton = findViewById(R.id.action_up);
-        mUpButton.setOnClickListener(view -> onSupportNavigateUp());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @Override
-                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-                    view.onApplyWindowInsets(windowInsets);
-                    mTopInset = windowInsets.getSystemWindowInsetTop();
-                    mUpButtonContainer.setTranslationY(mTopInset);
-                    updateUpButtonPosition();
-                    return windowInsets;
-                }
-            });
-        }
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_article_detail);
+    ButterKnife.bind(this);
+    setSupportActionBar(detailsToolbar);
 
-        if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().getData() != null) {
-                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
-            }
-        }
+    ((ArticleApp) getApplication()).getComponent().inject(this);
+
+    id = getIntent().getIntExtra("id", 0);
+
+    loadArticle();
+  }
+
+  private void loadArticle() {
+    repository.getArticleById(id)
+        .doOnSubscribe(disposable -> supportPostponeEnterTransition())
+        .doFinally(this::supportPostponeEnterTransition)
+        .subscribe(getSingleObserver());
+  }
+
+  private void updateActivityLayout(Article article) {
+    String title = article.title;
+
+    String subtitle = StringUtils.getFormattedDetailsSubtitle(
+        article.published_date,
+        article.author);
+
+    if (detailsToolbarCollapsing != null) {
+
+      if (showTitleInToolbar) {
+        detailsToolbarCollapsing.setTitle(title);
+      } else {
+        articleTitleView.setText(title);
+      }
+      articleSubtitleView.setText(subtitle);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
-    }
+    articleBodyView.setText(StringUtils.getFormattedBookText(article.body));
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        mCursor = cursor;
-        mPagerAdapter.notifyDataSetChanged();
+    picasso.load(article.photo)
+        .into(photoView);
+  }
 
-        // Select the start ID
-        if (mStartId > 0) {
-            mCursor.moveToFirst();
-            while (!mCursor.isAfterLast()) {
-                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-                    final int position = mCursor.getPosition();
-                    mPager.setCurrentItem(position, false);
-                    break;
-                }
-                mCursor.moveToNext();
-            }
-            mStartId = 0;
-        }
-    }
+  private SingleObserver<Article> getSingleObserver() {
+    return new SingleObserver<Article>() {
+      @Override
+      public void onSubscribe(@NonNull Disposable d) {
+        Timber.d("Single article loading started, id: %s", id);
+      }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        mCursor = null;
-        mPagerAdapter.notifyDataSetChanged();
-    }
+      @Override
+      public void onSuccess(@NonNull Article article) {
+        updateActivityLayout(article);
+        Timber.d("Single article loading finished.");
+      }
 
-    public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
-        if (itemId == mSelectedItemId) {
-//            mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-            updateUpButtonPosition();
-        }
-    }
-
-    private void updateUpButtonPosition() {
-        int upButtonNormalBottom = mTopInset + mUpButton.getHeight();
-        mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
-    }
-
-    private class MyPagerAdapter extends FragmentStatePagerAdapter {
-        public MyPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            super.setPrimaryItem(container, position, object);
-            ArticleDetailFragment fragment = (ArticleDetailFragment) object;
-            if (fragment != null) {
-                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-                updateUpButtonPosition();
-            }
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            mCursor.moveToPosition(position);
-            return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
-        }
-
-        @Override
-        public int getCount() {
-            return (mCursor != null) ? mCursor.getCount() : 0;
-        }
-    }
+      @Override
+      public void onError(@NonNull Throwable e) {
+        Timber.d("Single article loading error!");
+      }
+    };
+  }
 }
