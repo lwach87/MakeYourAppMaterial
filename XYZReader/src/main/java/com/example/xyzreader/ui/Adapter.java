@@ -31,7 +31,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
   public interface OnClickListener {
 
-    void onArticleClick(long id);
+    void onArticleClick(int id);
   }
 
   public void setOnClickListener(OnClickListener onClickListener) {
@@ -90,7 +90,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public void onClick(View v) {
-      listener.onArticleClick(getItemId());
+      listener.onArticleClick(articleList.get(getAdapterPosition()).id);
     }
   }
 

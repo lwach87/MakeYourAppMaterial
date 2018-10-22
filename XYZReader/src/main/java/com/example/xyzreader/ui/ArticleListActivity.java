@@ -2,6 +2,7 @@ package com.example.xyzreader.ui;
 
 import static android.support.v7.widget.StaggeredGridLayoutManager.VERTICAL;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
@@ -17,6 +18,7 @@ import com.example.xyzreader.data.RequestState;
 import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
 import com.example.xyzreader.di.modules.ArticleListActivityModule;
+import com.example.xyzreader.ui.Adapter.OnClickListener;
 import io.reactivex.CompletableObserver;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
@@ -25,7 +27,8 @@ import javax.inject.Inject;
 import timber.log.Timber;
 
 
-public class ArticleListActivity extends AppCompatActivity implements OnRefreshListener {
+public class ArticleListActivity extends AppCompatActivity implements OnRefreshListener,
+    OnClickListener {
 
   @Inject
   Repository repository;
@@ -56,6 +59,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
         .articleListActivityModule(new ArticleListActivityModule(this))
         .build().inject(this);
 
+    adapter.setOnClickListener(this);
     mSwipeRefreshLayout.setOnRefreshListener(this);
     mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
     mRecyclerView.setAdapter(adapter);
@@ -71,6 +75,13 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
   @Override
   public void onRefresh() {
     repository.syncArticles().subscribe(getSyncObserver());
+  }
+
+  @Override
+  public void onArticleClick(int id) {
+    Intent intent = new Intent(this, ArticleDetailActivity.class);
+    intent.putExtra("id", id);
+    startActivity(intent);
   }
 
   private void handleLoadingStatus() {
@@ -96,7 +107,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
         repository.getArticlesFromDatabase()
             .subscribe(
                 article -> adapter.swapData(article),
-                error -> Timber.d("Articles loading - error: " + error.getMessage()),
+                error -> Timber.d("Articles loading - error: %s", error.getMessage()),
                 () -> Timber.d("onComplete")
 //                subscription -> adapter.clearData()
             ));
@@ -116,7 +127,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
 
       @Override
       public void onError(@NonNull Throwable e) {
-        Timber.d("Sync failed! Error: " + e.getMessage());
+        Timber.d("Sync failed! Error: %s", e.getMessage());
       }
     };
   }
