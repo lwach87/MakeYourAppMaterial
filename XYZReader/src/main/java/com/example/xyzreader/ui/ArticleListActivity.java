@@ -36,22 +36,23 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
   Adapter adapter;
 
   @BindView(R.id.toolbar)
-  Toolbar mToolbar;
+  Toolbar articleToolbar;
 
   @BindView(R.id.swipe_refresh_layout)
-  SwipeRefreshLayout mSwipeRefreshLayout;
+  SwipeRefreshLayout swipeRefreshLayout;
 
   @BindView(R.id.recycler_view)
-  RecyclerView mRecyclerView;
+  RecyclerView recyclerView;
 
   private CompositeDisposable disposable = new CompositeDisposable();
+  private CompositeDisposable statusDisposable = new CompositeDisposable();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_article_list);
     ButterKnife.bind(this);
-    setSupportActionBar(mToolbar);
+    setSupportActionBar(articleToolbar);
 
     DaggerArticleListActivityComponent.builder()
         .applicationComponent(ArticleApp.get(this).getComponent())
@@ -59,9 +60,9 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
         .build().inject(this);
 
     adapter.setOnClickListener(this);
-    mSwipeRefreshLayout.setOnRefreshListener(this);
-    mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
-    mRecyclerView.setAdapter(adapter);
+    swipeRefreshLayout.setOnRefreshListener(this);
+    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
+    recyclerView.setAdapter(adapter);
 
     getArticlesFromDatabase();
     handleLoadingStatus();
@@ -84,21 +85,23 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
   }
 
   private void handleLoadingStatus() {
-    repository.getRequestState().subscribe(state -> {
-      switch (state) {
-        case RequestState.IDLE:
-          break;
-        case RequestState.LOADING:
-          mSwipeRefreshLayout.setRefreshing(true);
-          break;
-        case RequestState.COMPLETED:
-          mSwipeRefreshLayout.setRefreshing(false);
-          break;
-        case RequestState.ERROR:
-          mSwipeRefreshLayout.setRefreshing(false);
-          break;
-      }
-    });
+    statusDisposable.add(
+        repository.getRequestState().subscribe(state -> {
+          switch (state) {
+            case RequestState.IDLE:
+              break;
+            case RequestState.LOADING:
+              swipeRefreshLayout.setRefreshing(true);
+              break;
+            case RequestState.COMPLETED:
+              swipeRefreshLayout.setRefreshing(false);
+              break;
+            case RequestState.ERROR:
+              swipeRefreshLayout.setRefreshing(false);
+              break;
+          }
+        })
+    );
   }
 
   private void getArticlesFromDatabase() {
@@ -115,5 +118,6 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
   protected void onDestroy() {
     super.onDestroy();
     disposable.clear();
+    statusDisposable.clear();
   }
 }

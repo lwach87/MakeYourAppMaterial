@@ -91,7 +91,8 @@
       android:id="@+id/card_view"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="@dimen/card_padding_from_edge_of_screen_to_card">
+      android:layout_margin="@dimen/card_padding_from_edge_of_screen_to_card"
+      app:cardCornerRadius="@dimen/card_dimension_radius">
 
       <TextView
         android:id="@+id/article_body"
