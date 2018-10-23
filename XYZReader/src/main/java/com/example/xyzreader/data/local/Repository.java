@@ -10,6 +10,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import java.util.List;
 
 public class Repository {
 
@@ -42,10 +43,9 @@ public class Repository {
         );
   }
 
-  public Flowable<Article> getArticlesFromDatabase() {
+  public Flowable<List<Article>> getArticlesFromDatabase() {
     return articleDao
         .getAllArticles()
-        .concatMap(Flowable::fromIterable)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread());
   }

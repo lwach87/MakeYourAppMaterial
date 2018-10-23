@@ -1,5 +1,7 @@
 package com.example.xyzreader.ui;
 
+import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
+
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -14,9 +16,7 @@ import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.data.model.Article;
 import com.example.xyzreader.utils.StringUtils;
 import com.squareup.picasso.Picasso;
-import io.reactivex.SingleObserver;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 import javax.inject.Inject;
 import timber.log.Timber;
 
@@ -48,6 +48,7 @@ public class ArticleDetailActivity extends AppCompatActivity {
 
   private int id;
   private boolean showTitleInToolbar = true;
+  private CompositeDisposable disposable = new CompositeDisposable();
 
 
   @Override
@@ -59,16 +60,20 @@ public class ArticleDetailActivity extends AppCompatActivity {
 
     ((ArticleApp) getApplication()).getComponent().inject(this);
 
-    id = getIntent().getIntExtra("id", 0);
+    id = getIntent().getIntExtra(ARTICLE_ID, 0);
 
     loadArticle();
   }
 
   private void loadArticle() {
-    repository.getArticleById(id)
-        .doOnSubscribe(disposable -> supportPostponeEnterTransition())
-        .doFinally(this::supportPostponeEnterTransition)
-        .subscribe(getSingleObserver());
+    disposable.add(
+        repository.getArticleById(id)
+            .doOnSubscribe(disposable -> supportPostponeEnterTransition())
+            .doFinally(this::supportPostponeEnterTransition)
+            .subscribe(this::updateActivityLayout,
+                error -> Timber.d("Single article loading error!%s", error.getLocalizedMessage())
+            )
+    );
   }
 
   private void updateActivityLayout(Article article) {
@@ -94,23 +99,9 @@ public class ArticleDetailActivity extends AppCompatActivity {
         .into(photoView);
   }
 
-  private SingleObserver<Article> getSingleObserver() {
-    return new SingleObserver<Article>() {
-      @Override
-      public void onSubscribe(@NonNull Disposable d) {
-        Timber.d("Single article loading started, id: %s", id);
-      }
-
-      @Override
-      public void onSuccess(@NonNull Article article) {
-        updateActivityLayout(article);
-        Timber.d("Single article loading finished.");
-      }
-
-      @Override
-      public void onError(@NonNull Throwable e) {
-        Timber.d("Single article loading error!");
-      }
-    };
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    disposable.clear();
   }
 }

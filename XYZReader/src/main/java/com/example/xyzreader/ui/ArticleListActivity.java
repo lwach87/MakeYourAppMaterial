@@ -1,6 +1,8 @@
 package com.example.xyzreader.ui;
 
 import static android.support.v7.widget.StaggeredGridLayoutManager.VERTICAL;
+import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
+import static com.example.xyzreader.utils.RxUtils.getSyncObserver;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,10 +21,7 @@ import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
 import com.example.xyzreader.di.modules.ArticleListActivityModule;
 import com.example.xyzreader.ui.Adapter.OnClickListener;
-import io.reactivex.CompletableObserver;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import javax.inject.Inject;
 import timber.log.Timber;
 
@@ -80,7 +79,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
   @Override
   public void onArticleClick(int id) {
     Intent intent = new Intent(this, ArticleDetailActivity.class);
-    intent.putExtra("id", id);
+    intent.putExtra(ARTICLE_ID, id);
     startActivity(intent);
   }
 
@@ -106,30 +105,10 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
     disposable.add(
         repository.getArticlesFromDatabase()
             .subscribe(
-                article -> adapter.swapData(article),
-                error -> Timber.d("Articles loading - error: %s", error.getMessage()),
-                () -> Timber.d("onComplete")
-//                subscription -> adapter.clearData()
-            ));
-  }
-
-  private CompletableObserver getSyncObserver() {
-    return new CompletableObserver() {
-      @Override
-      public void onSubscribe(@NonNull Disposable d) {
-        Timber.d("Sync started...");
-      }
-
-      @Override
-      public void onComplete() {
-        Timber.d("Sync finished...");
-      }
-
-      @Override
-      public void onError(@NonNull Throwable e) {
-        Timber.d("Sync failed! Error: %s", e.getMessage());
-      }
-    };
+                articles -> adapter.swapData(articles),
+                error -> Timber.d("Articles loading - error: %s", error.getLocalizedMessage())
+            )
+    );
   }
 
   @Override

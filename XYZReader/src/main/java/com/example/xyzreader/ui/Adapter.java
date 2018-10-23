@@ -2,6 +2,7 @@ package com.example.xyzreader.ui;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.model.Article;
+import com.example.xyzreader.utils.ListDiffUtil;
 import com.example.xyzreader.utils.StringUtils;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
@@ -94,13 +96,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
   }
 
-  public void swapData(Article newArticle) {
-    articleList.add(newArticle);
-    notifyDataSetChanged();
-  }
-
-  public void clearData() {
+  public void swapData(List<Article> newArticles) {
+    DiffUtil.DiffResult result = DiffUtil.calculateDiff(new ListDiffUtil(articleList, newArticles));
     articleList.clear();
+    articleList.addAll(newArticles);
+    result.dispatchUpdatesTo(this);
   }
 }
 

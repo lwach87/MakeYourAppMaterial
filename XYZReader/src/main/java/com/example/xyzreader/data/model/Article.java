@@ -1,10 +1,12 @@
 package com.example.xyzreader.data.model;
 
 
+import static com.example.xyzreader.utils.Constants.TABLE_NAME;
+
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
-@Entity(tableName = "article")
+@Entity(tableName = TABLE_NAME)
 public class Article {
 
   @PrimaryKey
@@ -17,5 +19,6 @@ public class Article {
   public double aspect_ratio;
   public String published_date;
 
-  public Article() { }
+  public Article() {
+  }
 }
