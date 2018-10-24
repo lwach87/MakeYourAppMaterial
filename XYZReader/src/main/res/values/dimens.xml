@@ -10,7 +10,7 @@
   <dimen name="elevation_appbar">4dp</dimen>
 
   <!-- FAB -->
-  <dimen name="fab_margin">16dp</dimen>
+  <dimen name="fab_margin">24dp</dimen>
 
   <!-- Metrics and keylines -->
   <dimen name="keyline_margin_screen_edge">16dp</dimen>
