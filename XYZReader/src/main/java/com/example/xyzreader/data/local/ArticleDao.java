@@ -1,8 +1,9 @@
 package com.example.xyzreader.data.local;
 
+import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
+
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import com.example.xyzreader.data.model.Article;
 import io.reactivex.Flowable;
@@ -18,9 +19,6 @@ public interface ArticleDao {
   @Query("SELECT * FROM article WHERE id = :id")
   Single<Article> getArticleById(int id);
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  void insertArticles(List<Article> articles);
-
-  @Query("DELETE FROM article")
-  void deleteArticle();
+  @Insert(onConflict = REPLACE)
+  void insertArticles(List<Article> article);
 }

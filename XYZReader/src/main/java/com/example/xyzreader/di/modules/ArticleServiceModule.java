@@ -1,5 +1,7 @@
 package com.example.xyzreader.di.modules;
 
+import static com.example.xyzreader.utils.Constants.UDACITY_URL;
+
 import com.example.xyzreader.data.RequestState;
 import com.example.xyzreader.data.remote.ArticleService;
 import com.jakewharton.rxrelay2.BehaviorRelay;
@@ -17,7 +19,7 @@ public class ArticleServiceModule {
   @Singleton
   public Retrofit provideRetrofit() {
     return new Retrofit.Builder()
-        .baseUrl("https://go.udacity.com")
+        .baseUrl(UDACITY_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
         .build();

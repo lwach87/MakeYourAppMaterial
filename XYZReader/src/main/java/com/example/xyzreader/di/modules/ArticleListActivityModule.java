@@ -1,6 +1,6 @@
 package com.example.xyzreader.di.modules;
 
-import com.example.xyzreader.di.ArticleActivityScope;
+import com.example.xyzreader.di.ActivityScope;
 import com.example.xyzreader.ui.Adapter;
 import com.example.xyzreader.ui.ArticleListActivity;
 import com.squareup.picasso.Picasso;
@@ -17,7 +17,7 @@ public class ArticleListActivityModule {
   }
 
   @Provides
-  @ArticleActivityScope
+  @ActivityScope
   public Adapter provideAdapter(Picasso picasso) {
     return new Adapter(picasso, listActivity);
   }

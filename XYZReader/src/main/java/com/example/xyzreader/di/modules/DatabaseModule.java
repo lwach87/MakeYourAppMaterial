@@ -1,5 +1,7 @@
 package com.example.xyzreader.di.modules;
 
+import static com.example.xyzreader.utils.Constants.DATABASE_NAME;
+
 import android.arch.persistence.room.Room;
 import android.content.Context;
 import com.example.xyzreader.data.local.ArticleDao;
@@ -36,7 +38,7 @@ public class DatabaseModule {
   @Provides
   @Singleton
   public ArticleDatabase provideDatabase(Context context) {
-    return Room.databaseBuilder(context, ArticleDatabase.class, "ArticleDatabase").build();
+    return Room.databaseBuilder(context, ArticleDatabase.class, DATABASE_NAME).build();
   }
 
   @Provides

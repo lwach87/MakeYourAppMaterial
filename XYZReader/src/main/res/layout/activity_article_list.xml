@@ -1,40 +1,38 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/material_gray"
+  android:orientation="vertical">
+
+  <include layout="@layout/appbar_layout"/>
+
+  <FrameLayout
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:background="@color/material_gray"
-    android:orientation="vertical">
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <include layout="@layout/appbar_layout" />
+    <android.support.v4.widget.SwipeRefreshLayout
+      android:id="@+id/swipe_refresh_layout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="center_horizontal"
+      android:elevation="3dp">
 
-    <FrameLayout
-        android:layout_width="wrap_content"
+      <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:scrollbarStyle="outsideOverlay"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:paddingTop="@dimen/card_padding_from_edge_of_screen_to_card"
+        android:paddingBottom="@dimen/card_padding_from_edge_of_screen_to_card"
+        android:paddingStart="@dimen/card_padding_from_edge_of_screen_to_card"
+        android:paddingEnd="@dimen/card_padding_from_edge_of_screen_to_card"
+        android:clipToPadding="false"/>
 
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_refresh_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:elevation="3dp"
-            tools:targetApi="lollipop">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="4dp"
-                android:paddingEnd="4dp"
-                android:paddingStart="4dp"
-                android:paddingTop="4dp"
-                android:scrollbarStyle="outsideOverlay" />
-
-        </android.support.v4.widget.SwipeRefreshLayout>
-    </FrameLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
+  </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

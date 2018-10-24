@@ -34,28 +34,20 @@ public class Repository {
   public Completable syncArticles() {
     return articleService
         .getArticlesFromServer()
-        .observeOn(Schedulers.io())
-        .subscribeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(Schedulers.io())
         .doOnSubscribe(disposable -> publishRequestState(RequestState.LOADING))
         .doOnError(error -> publishRequestState(RequestState.ERROR))
         .doOnComplete(() -> publishRequestState(RequestState.COMPLETED))
-        .flatMapCompletable(this::saveArticlesToDatabase);
+        .flatMapCompletable(
+            articles -> Completable.create(emitter -> articleDao.insertArticles(articles))
+        );
   }
 
-  private Completable saveArticlesToDatabase(List<Article> articles) {
-    return Completable.create(emitter -> {
-          articleDao.deleteArticle();
-          articleDao.insertArticles(articles);
-        }
-    );
-  }
-
-  public Flowable<Article> getArticleFromDatabase() {
+  public Flowable<List<Article>> getArticlesFromDatabase() {
     return articleDao
         .getAllArticles()
         .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .flatMap(Flowable::fromIterable);
+        .observeOn(AndroidSchedulers.mainThread());
   }
 
   public Single<Article> getArticleById(int id) {

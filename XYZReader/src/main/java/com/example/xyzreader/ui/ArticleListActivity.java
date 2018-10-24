@@ -1,114 +1,123 @@
 package com.example.xyzreader.ui;
 
-import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import static android.support.v7.widget.StaggeredGridLayoutManager.VERTICAL;
+import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
+import static com.example.xyzreader.utils.RxUtils.getSyncObserver;
+
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-
-import com.example.xyzreader.ArticleApp;
-import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.UpdaterService;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.example.xyzreader.ArticleApp;
+import com.example.xyzreader.R;
+import com.example.xyzreader.data.RequestState;
+import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
 import com.example.xyzreader.di.modules.ArticleListActivityModule;
+import com.example.xyzreader.ui.Adapter.OnClickListener;
+import io.reactivex.disposables.CompositeDisposable;
+import javax.inject.Inject;
+import timber.log.Timber;
 
-/**
- * An activity representing a list of Articles. This activity has different presentations for
- * handset and tablet-size devices. On handsets, the activity presents a list of items, which when
- * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
- * activity presents a grid of items as cards.
- */
-public class ArticleListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
+public class ArticleListActivity extends AppCompatActivity implements OnRefreshListener,
+    OnClickListener {
 
-    @BindView(R.id.swipe_refresh_layout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
+  @Inject
+  Repository repository;
 
-    @BindView(R.id.recycler_view)
-    RecyclerView mRecyclerView;
+  @Inject
+  Adapter adapter;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_article_list);
-        ButterKnife.bind(this);
-        setSupportActionBar(mToolbar);
+  @BindView(R.id.toolbar)
+  Toolbar articleToolbar;
 
-        DaggerArticleListActivityComponent.builder()
-            .applicationComponent(ArticleApp.get(this).getComponent())
+  @BindView(R.id.swipe_refresh_layout)
+  SwipeRefreshLayout swipeRefreshLayout;
+
+  @BindView(R.id.recycler_view)
+  RecyclerView recyclerView;
+
+  private CompositeDisposable disposable = new CompositeDisposable();
+  private CompositeDisposable statusDisposable = new CompositeDisposable();
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_article_list);
+    ButterKnife.bind(this);
+    setSupportActionBar(articleToolbar);
+
+    DaggerArticleListActivityComponent.builder()
+        .applicationComponent(ArticleApp.get(this).getComponent())
         .articleListActivityModule(new ArticleListActivityModule(this))
-            .build().inject(this);
+        .build().inject(this);
 
-        getLoaderManager().initLoader(0, null, this);
+    adapter.setOnClickListener(this);
+    swipeRefreshLayout.setOnRefreshListener(this);
+    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
+    recyclerView.setAdapter(adapter);
 
-        if (savedInstanceState == null) {
-            refresh();
-        }
+    getArticlesFromDatabase();
+    handleLoadingStatus();
+
+    if (savedInstanceState == null) {
+      repository.syncArticles().subscribe(getSyncObserver());
     }
+  }
 
-    private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
-    }
+  @Override
+  public void onRefresh() {
+    repository.syncArticles().subscribe(getSyncObserver());
+  }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        registerReceiver(mRefreshingReceiver,
-                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
-    }
+  @Override
+  public void onArticleClick(int id) {
+    Intent intent = new Intent(this, ArticleDetailActivity.class);
+    intent.putExtra(ARTICLE_ID, id);
+    startActivity(intent);
+  }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unregisterReceiver(mRefreshingReceiver);
-    }
+  private void handleLoadingStatus() {
+    statusDisposable.add(
+        repository.getRequestState().subscribe(state -> {
+          switch (state) {
+            case RequestState.IDLE:
+              break;
+            case RequestState.LOADING:
+              swipeRefreshLayout.setRefreshing(true);
+              break;
+            case RequestState.COMPLETED:
+              swipeRefreshLayout.setRefreshing(false);
+              break;
+            case RequestState.ERROR:
+              swipeRefreshLayout.setRefreshing(false);
+              break;
+          }
+        })
+    );
+  }
 
-    private boolean mIsRefreshing = false;
+  private void getArticlesFromDatabase() {
+    disposable.add(
+        repository.getArticlesFromDatabase()
+            .subscribe(
+                articles -> adapter.swapData(articles),
+                error -> Timber.d("Articles loading - error: %s", error.getLocalizedMessage())
+            )
+    );
+  }
 
-    private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-                updateRefreshingUI();
-            }
-        }
-    };
-
-    private void updateRefreshingUI() {
-        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Adapter adapter = new Adapter(cursor, this);
-        adapter.setHasStableIds(true);
-        mRecyclerView.setAdapter(adapter);
-        int columnCount = getResources().getInteger(R.integer.list_column_count);
-        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL));
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mRecyclerView.setAdapter(null);
-    }
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    disposable.clear();
+    statusDisposable.clear();
+  }
 }
