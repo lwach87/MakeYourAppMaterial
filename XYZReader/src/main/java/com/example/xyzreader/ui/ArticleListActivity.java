@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import butterknife.BindInt;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.example.xyzreader.ArticleApp;
@@ -34,6 +35,9 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
 
   @Inject
   Adapter adapter;
+
+  @BindInt(R.integer.list_column_count)
+  int columnCount;
 
   @BindView(R.id.toolbar)
   Toolbar articleToolbar;
@@ -61,7 +65,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
 
     adapter.setOnClickListener(this);
     swipeRefreshLayout.setOnRefreshListener(this);
-    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
+    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(columnCount, VERTICAL));
     recyclerView.setAdapter(adapter);
 
     getArticlesFromDatabase();

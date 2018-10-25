@@ -2,11 +2,9 @@ package com.example.xyzreader.ui;
 
 import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.NestedScrollView.OnScrollChangeListener;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.example.xyzreader.ArticleApp;
@@ -59,8 +58,10 @@ public class ArticleDetailActivity extends AppCompatActivity implements OnClickL
   @BindView(R.id.share_fab)
   FloatingActionButton shareFab;
 
+  @BindBool(R.bool.show_title_in_toolbar)
+  boolean showTitleInToolbar;
+
   private int id;
-  private boolean showTitleInToolbar = true;
   private CompositeDisposable disposable = new CompositeDisposable();
 
 
@@ -137,12 +138,12 @@ public class ArticleDetailActivity extends AppCompatActivity implements OnClickL
   public void onClick(View v) {
     String sharedText = articleBodyView.getText().toString();
 
-    startActivity(
-        Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-            .setType("text/plain")
-            .setText(sharedText.substring(0, Math.min(sharedText.length(), 100)))
-            .getIntent(), "Share")
-    );
+//    startActivity(
+//        Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+//            .setType("text/plain")
+//            .setText(sharedText.substring(0, Math.min(sharedText.length(), 100)))
+//            .getIntent(), "Share")
+//    );
   }
 
   @Override

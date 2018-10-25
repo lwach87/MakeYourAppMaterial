@@ -6,6 +6,7 @@
 
   <!-- Elevation -->
   <dimen name="elevation_fab_pressed">12dp</dimen>
+  <dimen name="elevation_card_picked_up">8dp</dimen>
   <dimen name="elevation_fab_resting">6dp</dimen>
   <dimen name="elevation_appbar">4dp</dimen>
 
@@ -18,8 +19,7 @@
   <dimen name="keyline_margin_content">72dp</dimen>
 
   <!-- Cards -->
-  <dimen name="card_left_and_right_padding">16dp</dimen>
-  <dimen name="card_top_and_bottom_padding">16dp</dimen>
+  <dimen name="card_padding">16dp</dimen>
   <dimen name="card_padding_from_edge_of_screen_to_card">8dp</dimen>
 
   <!-- Collapsed Toolbar metrics -->
@@ -29,6 +29,7 @@
 
   <!-- Other -->
   <dimen name="max_layout_width">@dimen/custom_match_parent</dimen>
+  <dimen name="nested_view_negative_margin">-150dp</dimen>
 
   <!-- Structure -->
   <dimen name="appbar_height">56dp</dimen>

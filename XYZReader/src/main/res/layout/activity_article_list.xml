@@ -2,13 +2,12 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/material_gray"
-  android:orientation="vertical">
+  android:background="@color/material_gray">
 
   <include layout="@layout/appbar_layout"/>
 
   <FrameLayout
-    android:layout_width="wrap_content"
+    android:layout_width="@dimen/max_layout_width"
     android:layout_height="match_parent"
     android:layout_gravity="center"
     android:orientation="vertical"
@@ -26,10 +25,7 @@
         android:scrollbarStyle="outsideOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="@dimen/card_padding_from_edge_of_screen_to_card"
-        android:paddingBottom="@dimen/card_padding_from_edge_of_screen_to_card"
-        android:paddingStart="@dimen/card_padding_from_edge_of_screen_to_card"
-        android:paddingEnd="@dimen/card_padding_from_edge_of_screen_to_card"
+        android:padding="@dimen/card_padding_from_edge_of_screen_to_card"
         android:clipToPadding="false"/>
 
     </android.support.v4.widget.SwipeRefreshLayout>
