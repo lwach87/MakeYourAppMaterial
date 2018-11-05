@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: android.arch.paging:runtime-1.0.1">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/runtime-1.0.1.aar/baec3211a51f0dda36f8e797220534ba/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/runtime-1.0.1.aar/baec3211a51f0dda36f8e797220534ba/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/runtime-1.0.1.aar/6d7c898ee19c50ce8b661ef0f7ad5238/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/runtime-1.0.1.aar/6d7c898ee19c50ce8b661ef0f7ad5238/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
