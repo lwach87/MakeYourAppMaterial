@@ -2,9 +2,11 @@ package com.example.xyzreader.ui;
 
 import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.NestedScrollView.OnScrollChangeListener;
 import android.support.v7.app.AppCompatActivity;
@@ -16,12 +18,12 @@ import android.widget.TextView;
 import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.example.xyzreader.ArticleApp;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.local.Repository;
 import com.example.xyzreader.data.model.Article;
 import com.example.xyzreader.utils.StringUtils;
 import com.squareup.picasso.Picasso;
+import dagger.android.AndroidInjection;
 import io.reactivex.disposables.CompositeDisposable;
 import javax.inject.Inject;
 import timber.log.Timber;
@@ -71,7 +73,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements OnClickL
     setContentView(R.layout.activity_article_detail);
     ButterKnife.bind(this);
 
-    ((ArticleApp) getApplication()).getComponent().inject(this);
+    AndroidInjection.inject(this);
 
     id = getIntent().getIntExtra(ARTICLE_ID, 0);
     shareFab.setOnClickListener(this);
@@ -138,12 +140,12 @@ public class ArticleDetailActivity extends AppCompatActivity implements OnClickL
   public void onClick(View v) {
     String sharedText = articleBodyView.getText().toString();
 
-//    startActivity(
-//        Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-//            .setType("text/plain")
-//            .setText(sharedText.substring(0, Math.min(sharedText.length(), 100)))
-//            .getIntent(), "Share")
-//    );
+    startActivity(
+        Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+            .setType("text/plain")
+            .setText(sharedText.substring(0, Math.min(sharedText.length(), 100)))
+            .getIntent(), "Share")
+    );
   }
 
   @Override
