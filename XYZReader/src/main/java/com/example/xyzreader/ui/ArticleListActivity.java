@@ -15,13 +15,11 @@ import android.support.v7.widget.Toolbar;
 import butterknife.BindInt;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.example.xyzreader.ArticleApp;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.RequestState;
 import com.example.xyzreader.data.local.Repository;
-import com.example.xyzreader.di.components.DaggerArticleListActivityComponent;
-import com.example.xyzreader.di.modules.ArticleListActivityModule;
 import com.example.xyzreader.ui.Adapter.OnClickListener;
+import dagger.android.AndroidInjection;
 import io.reactivex.disposables.CompositeDisposable;
 import javax.inject.Inject;
 import timber.log.Timber;
@@ -58,10 +56,7 @@ public class ArticleListActivity extends AppCompatActivity implements OnRefreshL
     ButterKnife.bind(this);
     setSupportActionBar(articleToolbar);
 
-    DaggerArticleListActivityComponent.builder()
-        .applicationComponent(ArticleApp.get(this).getComponent())
-        .articleListActivityModule(new ArticleListActivityModule(this))
-        .build().inject(this);
+    AndroidInjection.inject(this);
 
     adapter.setOnClickListener(this);
     swipeRefreshLayout.setOnRefreshListener(this);
