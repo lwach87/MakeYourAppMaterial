@@ -7,22 +7,22 @@ import timber.log.Timber;
 
 public class RxUtils {
 
-  public static CompletableObserver getSyncObserver() {
-    return new CompletableObserver() {
-      @Override
-      public void onSubscribe(@NonNull Disposable d) {
-        Timber.d("Sync started...");
-      }
+    public static CompletableObserver getSyncObserver() {
+        return new CompletableObserver() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                Timber.d("Sync started...");
+            }
 
-      @Override
-      public void onComplete() {
-        Timber.d("Sync finished...");
-      }
+            @Override
+            public void onComplete() {
+                Timber.d("Sync finished...");
+            }
 
-      @Override
-      public void onError(@NonNull Throwable e) {
-        Timber.d("Sync failed! Error: %s", e.getMessage());
-      }
-    };
-  }
+            @Override
+            public void onError(@NonNull Throwable e) {
+                Timber.d("Sync failed! Error: %s", e.getMessage());
+            }
+        };
+    }
 }
