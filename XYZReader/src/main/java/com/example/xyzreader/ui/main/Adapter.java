@@ -1,4 +1,4 @@
-package com.example.xyzreader.ui;
+package com.example.xyzreader.ui.main;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
