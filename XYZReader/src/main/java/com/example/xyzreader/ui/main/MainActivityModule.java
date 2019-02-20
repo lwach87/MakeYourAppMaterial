@@ -15,7 +15,7 @@ import dagger.Provides;
 public class MainActivityModule {
 
     @Provides
-    public Adapter provideAdapter(Picasso picasso, MainActivity listActivity) {
+    Adapter provideAdapter(Picasso picasso, MainActivity listActivity) {
         return new Adapter(picasso, listActivity);
     }
 
