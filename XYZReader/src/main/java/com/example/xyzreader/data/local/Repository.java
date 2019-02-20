@@ -2,7 +2,7 @@ package com.example.xyzreader.data.local;
 
 import com.example.xyzreader.data.RequestState;
 import com.example.xyzreader.data.model.Article;
-import com.example.xyzreader.data.remote.ArticleService;
+import com.example.xyzreader.data.remote.ApiHelper;
 import com.jakewharton.rxrelay2.BehaviorRelay;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -15,13 +15,13 @@ import java.util.List;
 public class Repository {
 
   private ArticleDao articleDao;
-  private ArticleService articleService;
+  private ApiHelper apiHelper;
   private BehaviorRelay<Integer> requestState;
 
-  public Repository(ArticleDao articleDao, ArticleService articleService,
+  public Repository(ArticleDao articleDao, ApiHelper apiHelper,
       BehaviorRelay<Integer> requestState) {
     this.articleDao = articleDao;
-    this.articleService = articleService;
+    this.apiHelper = apiHelper;
     this.requestState = requestState;
   }
 
@@ -32,7 +32,7 @@ public class Repository {
   }
 
   public Completable syncArticles() {
-    return articleService
+    return apiHelper
         .getArticlesFromServer()
         .subscribeOn(Schedulers.io())
         .doOnSubscribe(disposable -> publishRequestState(RequestState.LOADING))
