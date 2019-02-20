@@ -17,7 +17,6 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -28,12 +27,6 @@ public class MainActivityViewModel extends BaseViewModel {
     public MainActivityViewModel(DataManager dataManager, SchedulerProvider schedulerProvider, BehaviorRelay<Integer> requestState) {
         super(dataManager, schedulerProvider, requestState);
         articleLiveData = new MutableLiveData<>();
-    }
-
-    private void publishRequestState(@RequestState.State int state) {
-        Observable.just(state)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(getRequestState());
     }
 
     public void handleLoadingStatus(SwipeRefreshLayout refreshLayout, Context context) {
@@ -77,10 +70,17 @@ public class MainActivityViewModel extends BaseViewModel {
                 );
     }
 
+    private void publishRequestState(@RequestState.State int state) {
+        Observable.just(state)
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(getRequestState());
+    }
+
     public void getArticlesFromDatabase() {
         getDisposable().add(getDataManager()
                 .getAllArticles()
                 .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
                 .subscribe(
                         articles -> articleLiveData.setValue(articles),
                         error -> Timber.d("Articles loading - error: %s", error.getLocalizedMessage())

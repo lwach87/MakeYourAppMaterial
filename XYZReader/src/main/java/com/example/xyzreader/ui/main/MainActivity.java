@@ -11,8 +11,8 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 
 import com.example.xyzreader.R;
-import com.example.xyzreader.ui.ArticleDetailActivity;
 import com.example.xyzreader.ui.base.BaseActivity;
+import com.example.xyzreader.ui.detail.DetailActivity;
 import com.example.xyzreader.ui.main.Adapter.OnClickListener;
 
 import javax.inject.Inject;
@@ -63,13 +63,12 @@ public class MainActivity extends BaseActivity implements OnRefreshListener,
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(columnCount, VERTICAL));
         recyclerView.setAdapter(adapter);
 
-        viewModel.getArticlesFromDatabase();
-        viewModel.handleLoadingStatus(swipeRefreshLayout, this);
-
         if (savedInstanceState == null) {
             viewModel.syncArticles().subscribe(getSyncObserver());
         }
 
+        viewModel.handleLoadingStatus(swipeRefreshLayout, this);
+        viewModel.getArticlesFromDatabase();
         subscribeToLiveData();
     }
 
@@ -80,7 +79,7 @@ public class MainActivity extends BaseActivity implements OnRefreshListener,
 
     @Override
     public void onArticleClick(int id) {
-        Intent intent = new Intent(this, ArticleDetailActivity.class);
+        Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(ARTICLE_ID, id);
         startActivity(intent);
     }
