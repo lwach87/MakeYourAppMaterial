@@ -28,7 +28,7 @@ public class ListDiffUtil extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return oldList.get(oldItemPosition).id == newList.get(newItemPosition).id;
+        return oldList.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
     }
 
     @Override

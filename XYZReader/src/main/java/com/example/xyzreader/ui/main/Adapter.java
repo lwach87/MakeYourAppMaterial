@@ -40,7 +40,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public long getItemId(int position) {
-        return articleList.get(position).id;
+        return articleList.get(position).getId();
     }
 
     @NonNull
@@ -54,13 +54,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        holder.titleView.setText(articleList.get(position).title);
+        holder.titleView.setText(articleList.get(position).getTitle());
 
         holder.subtitleView.setText(StringUtils
-                .getFormattedSubtitle(articleList.get(position).published_date,
-                        articleList.get(position).author));
+                .getFormattedSubtitle(articleList.get(position).getPublished_date(),
+                        articleList.get(position).getAuthor()));
 
-        picasso.load(articleList.get(position).photo)
+        picasso.load(articleList.get(position).getPhoto())
                 .into(holder.thumbnailView);
     }
 
@@ -101,7 +101,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            listener.onArticleClick(articleList.get(getAdapterPosition()).id);
+            listener.onArticleClick(articleList.get(getAdapterPosition()).getId());
         }
     }
 }

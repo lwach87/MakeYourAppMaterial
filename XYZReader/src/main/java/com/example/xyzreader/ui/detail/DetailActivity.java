@@ -111,11 +111,11 @@ public class DetailActivity extends BaseActivity implements OnClickListener {
     }
 
     private void updateActivityLayout(Article article) {
-        String title = article.title;
+        String title = article.getTitle();
 
         String subtitle = StringUtils.getFormattedDetailsSubtitle(
-                article.published_date,
-                article.author);
+                article.getPublished_date(),
+                article.getAuthor());
 
         if (detailsToolbarCollapsing != null) {
 
@@ -127,9 +127,9 @@ public class DetailActivity extends BaseActivity implements OnClickListener {
             articleSubtitleView.setText(subtitle);
         }
 
-        articleBodyView.setText(StringUtils.getFormattedBookText(article.body));
+        articleBodyView.setText(StringUtils.getFormattedBookText(article.getBody()));
 
-        picasso.load(article.photo)
+        picasso.load(article.getPhoto())
                 .into(photoView);
     }
 
