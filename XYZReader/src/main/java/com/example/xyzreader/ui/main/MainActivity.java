@@ -23,7 +23,6 @@ import butterknife.ButterKnife;
 
 import static android.support.v7.widget.StaggeredGridLayoutManager.VERTICAL;
 import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
-import static com.example.xyzreader.utils.RxUtils.getSyncObserver;
 
 
 public class MainActivity extends BaseActivity implements OnRefreshListener,
@@ -64,7 +63,7 @@ public class MainActivity extends BaseActivity implements OnRefreshListener,
         recyclerView.setAdapter(adapter);
 
         if (savedInstanceState == null) {
-            viewModel.syncArticles().subscribe(getSyncObserver());
+            viewModel.syncArticles();
         }
 
         viewModel.handleLoadingStatus(swipeRefreshLayout, this);
@@ -74,7 +73,7 @@ public class MainActivity extends BaseActivity implements OnRefreshListener,
 
     @Override
     public void onRefresh() {
-        viewModel.syncArticles().subscribe(getSyncObserver());
+        viewModel.syncArticles();
     }
 
     @Override

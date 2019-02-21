@@ -58,8 +58,8 @@ public class MainActivityViewModel extends BaseViewModel {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 
-    public Completable syncArticles() {
-        return getDataManager()
+    public void syncArticles() {
+        getDisposable().add(getDataManager()
                 .getArticlesFromServer()
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(disposable -> publishRequestState(RequestState.LOADING))
@@ -67,7 +67,8 @@ public class MainActivityViewModel extends BaseViewModel {
                 .doOnComplete(() -> publishRequestState(RequestState.COMPLETED))
                 .flatMapCompletable(
                         articles -> Completable.create(emitter -> getDataManager().insertArticles(articles))
-                );
+                ).subscribe(() -> Timber.d("Sync finished..."),
+                        throwable -> Timber.d("Sync failed! Error: %s", throwable.getMessage())));
     }
 
     private void publishRequestState(@RequestState.State int state) {
