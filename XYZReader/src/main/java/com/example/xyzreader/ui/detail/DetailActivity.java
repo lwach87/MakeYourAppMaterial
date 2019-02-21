@@ -26,7 +26,6 @@ import javax.inject.Inject;
 import butterknife.BindBool;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import timber.log.Timber;
 
 import static com.example.xyzreader.utils.Constants.ARTICLE_ID;
 
@@ -99,15 +98,12 @@ public class DetailActivity extends BaseActivity implements OnClickListener {
                 }
         );
 
-        loadArticle(id);
+        viewModel.loadArticle(id, this);
+        subscribeToLiveData();
     }
 
-    private void loadArticle(int id) {
-        viewModel.getDisposable().add(viewModel.loadArticle(id)
-                .doOnSubscribe(disposable -> supportPostponeEnterTransition())
-                .doFinally(this::supportPostponeEnterTransition)
-                .subscribe(this::updateActivityLayout,
-                        error -> Timber.d("Single article loading error!%s", error.getLocalizedMessage())));
+    private void subscribeToLiveData() {
+        viewModel.getMutableLiveData().observe(this, this::updateActivityLayout);
     }
 
     private void updateActivityLayout(Article article) {
